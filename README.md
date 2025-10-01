@@ -1,6 +1,6 @@
 # buff-ch-checker
-Firefox extension for buff163 which displays a case hardened weapons % of blue.
-The icon.png and blue_gem_data.json need to be copied into the firefox folder before loading the manifest.
+Firefox and Chrome extension for buff163 which displays a case hardened weapons % of blue.
+The icon.png and blue_gem_data.json need to be copied into the firefox/chrome folder before loading the manifest.
 
 **Todo List**
 - [ ] Add CH gloves compatability
