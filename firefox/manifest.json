@@ -1,16 +1,23 @@
 {
   "manifest_version": 2,
-  "name": "Buff163 Case Hardened Blue %",
-  "version": "1.0",
+  "name": "buff-ch-checker",
+  "version": "1.1",
   "description": "Shows blue percentage for Case Hardened skins on buff163",
   "permissions": [
     "storage"
   ],
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Settings",
     "default_icon": {
-      "48": "icon.jpg"
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
     }
   },
   "content_scripts": [

@@ -72,12 +72,16 @@ function getBluePercentage(weaponInternalName, paintSeed) {
 
 function processListings() {
   // Find all listing rows
-  const listings = document.querySelectorAll('tr.selling[data-asset-info][data-goods-info]');
+  //const listings = document.querySelectorAll('tr.selling[data-asset-info][data-goods-info]');
+  const listings = document.querySelectorAll('tr.selling[data-asset-info][data-goods-info], tr.bookmark_order[data-asset-info][data-goods-info]');
   
   listings.forEach(listing => {
     // Check if already processed
     if (listing.dataset.chProcessed) return;
     listing.dataset.chProcessed = 'true';
+
+    // Detect if this is a bookmark row
+    const isBookmark = listing.classList.contains('bookmark_order');
     
     try {
       // Parse the JSON data
@@ -98,9 +102,18 @@ function processListings() {
       const percentages = getBluePercentage(weaponInternalName, paintSeed);
       
       if (percentages) {
-        // Find the sticker-premium div to add the blue % next to tier
-        const premiumDiv = listing.querySelector('.sticker-premium');
-        if (premiumDiv) {
+
+        // Choose placement based on page type
+        let targetElement;
+        if (isBookmark) {
+          // On bookmarks page: put it after the wear category tag
+          targetElement = listing.querySelector('.name-cont.wear');
+        } else {
+          // On listings page: use the sticker-premium div
+          targetElement = listing.querySelector('.sticker-premium');
+        }
+
+        if (targetElement) {
           let primaryMetric = 'overall';
           let primaryValue = percentages.overall;
 
@@ -112,7 +125,7 @@ function processListings() {
           
           // Create blue percentage badge
           const blueSpan = document.createElement('span');
-          blueSpan.className = 'stag ch-blue-gem';
+          blueSpan.className = isBookmark ? 'tag ch-blue-gem' : 'stag ch-blue-gem';
           
           // Color code based on blue %
           let backgroundColor = '#5299FF'; // Default blue
@@ -126,7 +139,13 @@ function processListings() {
             backgroundColor = '#7B8A99'; // Gray-blue for low tier
           }
           
-          blueSpan.style.cssText = `float: left; background: ${backgroundColor}; margin-left: 5px; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 500;`;
+          if (isBookmark) {
+            // Style for bookmarks page - matches the wear tag style
+            blueSpan.style.cssText = `background: ${backgroundColor}; margin-left: 5px; display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 12px; color: white;`;
+          } else {
+            // Style for listings page
+            blueSpan.style.cssText = `float: left; background: ${backgroundColor}; margin-left: 5px; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 500;`;
+          }
           
           // Display format: show primary metric with value
           const metricLabel = primaryMetric === 'any_blue' ? 'Blue' : primaryMetric.charAt(0).toUpperCase() + primaryMetric.slice(1);
@@ -147,7 +166,7 @@ function processListings() {
           }
           
           
-          premiumDiv.appendChild(blueSpan);
+          targetElement.appendChild(blueSpan);
         }
       }
     } catch (error) {
@@ -162,7 +181,10 @@ function observePageChanges() {
     processListings();
   });
   
-  const targetNode = document.querySelector('.list_tb_csgo') || document.body;
+  // Observe both listings table and bookmarks table
+  const listingsTable = document.querySelector('.list_tb_csgo');
+  const targetNode = listingsTable || document.body;
+  
   observer.observe(targetNode, {
     childList: true,
     subtree: true
@@ -174,8 +196,8 @@ browser.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.akMetric) {
     akMetric = changes.akMetric.newValue;
     
-    // Clear and reprocess
-    document.querySelectorAll('tr.selling[data-ch-processed]').forEach(el => {
+    // Clear and reprocess both listings and bookmarks
+    document.querySelectorAll('tr.selling[data-ch-processed], tr.bookmark_order[data-ch-processed]').forEach(el => {
       delete el.dataset.chProcessed;
       el.querySelectorAll('.ch-blue-gem, .ch-tier').forEach(badge => badge.remove());
     });
